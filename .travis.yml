@@ -1,0 +1,27 @@
+sudo: required
+# 도커 서비스를 사용할 수 있게 한다.
+services:
+  - docker
+
+# 서비스에 docker를 지정하면 before_install 빌드 단계에서
+# OhMinsSub/docker-node을 이미지를 생성한다 Dockerfile를 기반으로 해서
+before_install:
+  - docker build -t OhMinsSub/docker-node -f Dockerfile .
+
+# OhMinsSub/docker-node 컨테이너를 실행하고 코드를 테스트팅 한다.
+script:
+  - docker run OhMinsSub/docker-node npm run test -- --coverage
+
+# 배포
+deploy:
+  provider: elasticbeanstalk # AWS elasticbeanstalk를 의미
+  region: "us-west-2"
+  app: "docker-react" # 배포 애플리케이션
+  env: "DockerReact-env"
+  bucket_name: "elasticbeanstalk-us-west-2-679935502951" #버킷 이름
+  bucket_path: "docker-react" # 버킷 주소
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY # Travis repo settings에 설정된 값
+  secret_access_key:
+    secure: $AWS_SECRET_KEY # Travis repo settings에 설정된 값
